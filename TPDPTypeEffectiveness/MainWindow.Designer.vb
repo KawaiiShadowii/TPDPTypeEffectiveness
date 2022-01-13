@@ -51,6 +51,12 @@ Partial Class MainWindow
         Me.lbl_SpDefValue = New System.Windows.Forms.Label()
         Me.lbl_SpdValue = New System.Windows.Forms.Label()
         Me.btn_Order = New System.Windows.Forms.Button()
+        Me.btn_StatsBase = New System.Windows.Forms.Button()
+        Me.btn_Stats50Min = New System.Windows.Forms.Button()
+        Me.btn_Stats50Max = New System.Windows.Forms.Button()
+        Me.lbl_Ability1 = New System.Windows.Forms.Label()
+        Me.lbl_Ability2 = New System.Windows.Forms.Label()
+        Me.lbl_AbilitySplit = New System.Windows.Forms.Label()
         Me.SuspendLayout()
         '
         'cmb_CharacterSelect
@@ -199,7 +205,7 @@ Partial Class MainWindow
         Me.lbl_HPBG.BackColor = System.Drawing.Color.FromArgb(CType(CType(190, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(153, Byte), Integer))
         Me.lbl_HPBG.Location = New System.Drawing.Point(96, 103)
         Me.lbl_HPBG.Name = "lbl_HPBG"
-        Me.lbl_HPBG.Size = New System.Drawing.Size(356, 13)
+        Me.lbl_HPBG.Size = New System.Drawing.Size(242, 13)
         Me.lbl_HPBG.TabIndex = 14
         '
         'lbl_FoAtkBG
@@ -207,7 +213,7 @@ Partial Class MainWindow
         Me.lbl_FoAtkBG.BackColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(153, Byte), Integer))
         Me.lbl_FoAtkBG.Location = New System.Drawing.Point(96, 116)
         Me.lbl_FoAtkBG.Name = "lbl_FoAtkBG"
-        Me.lbl_FoAtkBG.Size = New System.Drawing.Size(356, 13)
+        Me.lbl_FoAtkBG.Size = New System.Drawing.Size(242, 13)
         Me.lbl_FoAtkBG.TabIndex = 15
         '
         'lbl_FoDefBG
@@ -215,7 +221,7 @@ Partial Class MainWindow
         Me.lbl_FoDefBG.BackColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(211, Byte), Integer), CType(CType(153, Byte), Integer))
         Me.lbl_FoDefBG.Location = New System.Drawing.Point(96, 129)
         Me.lbl_FoDefBG.Name = "lbl_FoDefBG"
-        Me.lbl_FoDefBG.Size = New System.Drawing.Size(356, 13)
+        Me.lbl_FoDefBG.Size = New System.Drawing.Size(242, 13)
         Me.lbl_FoDefBG.TabIndex = 16
         '
         'lbl_SpAtkBG
@@ -223,7 +229,7 @@ Partial Class MainWindow
         Me.lbl_SpAtkBG.BackColor = System.Drawing.Color.FromArgb(CType(CType(153, Byte), Integer), CType(CType(197, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.lbl_SpAtkBG.Location = New System.Drawing.Point(96, 142)
         Me.lbl_SpAtkBG.Name = "lbl_SpAtkBG"
-        Me.lbl_SpAtkBG.Size = New System.Drawing.Size(356, 13)
+        Me.lbl_SpAtkBG.Size = New System.Drawing.Size(242, 13)
         Me.lbl_SpAtkBG.TabIndex = 17
         '
         'lbl_SpDefBG
@@ -231,7 +237,7 @@ Partial Class MainWindow
         Me.lbl_SpDefBG.BackColor = System.Drawing.Color.FromArgb(CType(CType(226, Byte), Integer), CType(CType(153, Byte), Integer), CType(CType(255, Byte), Integer))
         Me.lbl_SpDefBG.Location = New System.Drawing.Point(96, 155)
         Me.lbl_SpDefBG.Name = "lbl_SpDefBG"
-        Me.lbl_SpDefBG.Size = New System.Drawing.Size(356, 13)
+        Me.lbl_SpDefBG.Size = New System.Drawing.Size(242, 13)
         Me.lbl_SpDefBG.TabIndex = 18
         '
         'lbl_SpdBG
@@ -239,7 +245,7 @@ Partial Class MainWindow
         Me.lbl_SpdBG.BackColor = System.Drawing.Color.FromArgb(CType(CType(153, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(241, Byte), Integer))
         Me.lbl_SpdBG.Location = New System.Drawing.Point(96, 168)
         Me.lbl_SpdBG.Name = "lbl_SpdBG"
-        Me.lbl_SpdBG.Size = New System.Drawing.Size(356, 13)
+        Me.lbl_SpdBG.Size = New System.Drawing.Size(242, 13)
         Me.lbl_SpdBG.TabIndex = 19
         '
         'lbl_CostValue
@@ -322,11 +328,76 @@ Partial Class MainWindow
         Me.btn_Order.Text = "Change Order"
         Me.btn_Order.UseVisualStyleBackColor = True
         '
+        'btn_StatsBase
+        '
+        Me.btn_StatsBase.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btn_StatsBase.Location = New System.Drawing.Point(351, 103)
+        Me.btn_StatsBase.Name = "btn_StatsBase"
+        Me.btn_StatsBase.Size = New System.Drawing.Size(100, 23)
+        Me.btn_StatsBase.TabIndex = 27
+        Me.btn_StatsBase.Text = "Base Stats"
+        Me.btn_StatsBase.UseVisualStyleBackColor = True
+        '
+        'btn_Stats50Min
+        '
+        Me.btn_Stats50Min.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btn_Stats50Min.Location = New System.Drawing.Point(351, 132)
+        Me.btn_Stats50Min.Name = "btn_Stats50Min"
+        Me.btn_Stats50Min.Size = New System.Drawing.Size(100, 23)
+        Me.btn_Stats50Min.TabIndex = 28
+        Me.btn_Stats50Min.Text = "Lvl 50 Min. Stats"
+        Me.btn_Stats50Min.UseVisualStyleBackColor = True
+        '
+        'btn_Stats50Max
+        '
+        Me.btn_Stats50Max.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btn_Stats50Max.Location = New System.Drawing.Point(351, 161)
+        Me.btn_Stats50Max.Name = "btn_Stats50Max"
+        Me.btn_Stats50Max.Size = New System.Drawing.Size(100, 23)
+        Me.btn_Stats50Max.TabIndex = 29
+        Me.btn_Stats50Max.Text = "Lvl 50 Max. Stats"
+        Me.btn_Stats50Max.UseVisualStyleBackColor = True
+        '
+        'lbl_Ability1
+        '
+        Me.lbl_Ability1.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lbl_Ability1.Location = New System.Drawing.Point(13, 320)
+        Me.lbl_Ability1.Name = "lbl_Ability1"
+        Me.lbl_Ability1.Size = New System.Drawing.Size(212, 13)
+        Me.lbl_Ability1.TabIndex = 30
+        Me.lbl_Ability1.Text = "Ability 1:"
+        Me.lbl_Ability1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lbl_Ability2
+        '
+        Me.lbl_Ability2.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lbl_Ability2.Location = New System.Drawing.Point(238, 320)
+        Me.lbl_Ability2.Name = "lbl_Ability2"
+        Me.lbl_Ability2.Size = New System.Drawing.Size(213, 13)
+        Me.lbl_Ability2.TabIndex = 31
+        Me.lbl_Ability2.Text = "Ability 2:"
+        Me.lbl_Ability2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
+        'lbl_AbilitySplit
+        '
+        Me.lbl_AbilitySplit.BackColor = System.Drawing.Color.Black
+        Me.lbl_AbilitySplit.Location = New System.Drawing.Point(231, 320)
+        Me.lbl_AbilitySplit.Name = "lbl_AbilitySplit"
+        Me.lbl_AbilitySplit.Size = New System.Drawing.Size(1, 215)
+        Me.lbl_AbilitySplit.TabIndex = 32
+        Me.lbl_AbilitySplit.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
+        '
         'MainWindow
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(464, 321)
+        Me.ClientSize = New System.Drawing.Size(463, 545)
+        Me.Controls.Add(Me.lbl_AbilitySplit)
+        Me.Controls.Add(Me.lbl_Ability2)
+        Me.Controls.Add(Me.lbl_Ability1)
+        Me.Controls.Add(Me.btn_Stats50Max)
+        Me.Controls.Add(Me.btn_Stats50Min)
+        Me.Controls.Add(Me.btn_StatsBase)
         Me.Controls.Add(Me.btn_Order)
         Me.Controls.Add(Me.lbl_SpdValue)
         Me.Controls.Add(Me.lbl_SpDefValue)
@@ -358,8 +429,8 @@ Partial Class MainWindow
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MaximizeBox = False
-        Me.MaximumSize = New System.Drawing.Size(480, 360)
-        Me.MinimumSize = New System.Drawing.Size(480, 360)
+        Me.MaximumSize = New System.Drawing.Size(479, 584)
+        Me.MinimumSize = New System.Drawing.Size(479, 584)
         Me.Name = "MainWindow"
         Me.Text = "TPDP Type Effectiveness"
         Me.ResumeLayout(False)
@@ -395,4 +466,10 @@ Partial Class MainWindow
     Friend WithEvents lbl_SpDefValue As Label
     Friend WithEvents lbl_SpdValue As Label
     Friend WithEvents btn_Order As Button
+    Friend WithEvents btn_StatsBase As Button
+    Friend WithEvents btn_Stats50Min As Button
+    Friend WithEvents btn_Stats50Max As Button
+    Friend WithEvents lbl_Ability1 As Label
+    Friend WithEvents lbl_Ability2 As Label
+    Friend WithEvents lbl_AbilitySplit As Label
 End Class

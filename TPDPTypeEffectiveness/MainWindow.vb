@@ -8,40 +8,39 @@ Public Class MainWindow
     Private _types As New List(Of Type)
     Private _typeChart As New List(Of Typechart)
     Private _sorted As Boolean = False
+    Private _currentPuppetForm As PuppetForm
+    Private _abilities As List(Of Ability)
 
-    Private Sub MainWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-
-        Dim puppetsSourceCode As String = DownloadSource("http://tpdpwiki.net/wiki/Puppetdex")
-        LoadPuppets(puppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='SoD 1.103']/table/tbody/tr")
-
-        Dim extendedPuppetsSourceCode As String = DownloadSource("http://en.tpdpwiki.net/wiki/Mod:Mod_Puppetdex")
-        LoadExtendedPuppets(extendedPuppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='Shard of Dreams - Extended -']/table/tbody/tr")
-
-        SetMaxValue()
-
-        Dim typesSourceCode As String = DownloadSource("http://tpdpwiki.net/wiki/Type_Chart")
-        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='SoD 1.013']/table[@class='wikitable floatleft']/tbody/tr")
-
-        LoadPuppetsIntoComboBox()
-
-    End Sub
+#Region "Functions for initial load"
 
     Private Function DownloadSource(url As String) As String
 
-        Using process As New Process()
+        Try
 
-            Dim processStartInfo As New ProcessStartInfo("curl", url)
-            processStartInfo.UseShellExecute = False
-            processStartInfo.RedirectStandardOutput = True
-            processStartInfo.CreateNoWindow = True
-            process.StartInfo = processStartInfo
-            process.Start()
+            Using process As New Process()
 
-            Using reader As StreamReader = process.StandardOutput
-                Return reader.ReadToEnd()
+                Dim processStartInfo As New ProcessStartInfo("curl", url)
+                processStartInfo.UseShellExecute = False
+                processStartInfo.RedirectStandardOutput = True
+                processStartInfo.CreateNoWindow = True
+                process.StartInfo = processStartInfo
+                process.Start()
+
+                Using reader As StreamReader = process.StandardOutput
+                    Return reader.ReadToEnd()
+                End Using
+
             End Using
 
-        End Using
+        Catch
+
+            MessageBox.Show(String.Concat($"An error occured while requesting {url}. Please make sure that you have installed cURL correctly. If the error still occurs, please contact Kawaii Shadowii."),
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error)
+            Environment.Exit(0)
+
+        End Try
 
     End Function
 
@@ -51,6 +50,12 @@ Public Class MainWindow
         doc.LoadHtml(sourceCode)
 
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
+
+        If rows Is Nothing Then
+            MessageBox.Show("An error occured while loading the rows from the puppet table. Please contact Kawaii Shadowii.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Environment.Exit(0)
+        End If
+
         rows.RemoveAt(0)
         rows.RemoveAt(UBound(rows.ToArray()))
 
@@ -90,6 +95,12 @@ Public Class MainWindow
         doc.LoadHtml(sourceCode)
 
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
+
+        If rows Is Nothing Then
+            MessageBox.Show("An error occured while loading the rows from the extended puppet table. Please contact Kawaii Shadowii.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Environment.Exit(0)
+        End If
+
         rows.RemoveAt(0)
         rows.RemoveAt(UBound(rows.ToArray()))
 
@@ -119,13 +130,12 @@ Public Class MainWindow
 
         Dim values As New List(Of Integer)
 
-        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.HP).Max()).Max())
-        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.FoAtk).Max()).Max())
-        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.FoDef).Max()).Max())
-        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.SpAtk).Max()).Max())
-        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.SpDef).Max()).Max())
-        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.Spd).Max()).Max())
-        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.Cost).Max()).Max())
+        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.MaxHP).Max()).Max())
+        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.MaxFoAtk).Max()).Max())
+        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.MaxFoDef).Max()).Max())
+        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.MaxSpAtk).Max()).Max())
+        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.MaxSpDef).Max()).Max())
+        values.Add(_puppetList.Select(Function(x) x.Forms.Select(Function(y) y.MaxSpd).Max()).Max())
 
         _maxValue = values.Max(Function(x) x)
 
@@ -137,6 +147,12 @@ Public Class MainWindow
         doc.LoadHtml(sourceCode)
 
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
+
+        If rows Is Nothing Then
+            MessageBox.Show("An error occured while loading the rows from the type chart. Please contact Kawaii Shadowii.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Environment.Exit(0)
+        End If
+
         rows.RemoveAt(0)
 
         Dim rowPos As Integer = 0
@@ -193,34 +209,28 @@ Public Class MainWindow
         cmb_CharacterSelect.DataSource = _puppetList.Select(Function(x) x.Name).ToList()
     End Sub
 
-    Private Sub ChangePuppetsOrder()
+#End Region
 
-        If _sorted Then
-            cmb_CharacterSelect.DataSource = _puppetList.Select(Function(x) x.Name).ToList()
-            _sorted = False
-        Else
-            cmb_CharacterSelect.DataSource = _puppetList.Select(Function(x) x.Name).OrderBy(Function(x) x).ToList()
-            _sorted = True
-        End If
+#Region "Event Functions"
+
+    Private Sub MainWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+
+        Dim puppetsSourceCode As String = DownloadSource("http://tpdpwiki.net/wiki/Puppetdex")
+        LoadPuppets(puppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='SoD 1.103']/table/tbody/tr")
+
+        Dim extendedPuppetsSourceCode As String = DownloadSource("http://en.tpdpwiki.net/wiki/Mod:Mod_Puppetdex")
+        LoadExtendedPuppets(extendedPuppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='Shard of Dreams - Extended -']/table/tbody/tr")
+
+        SetMaxValue()
+
+        Dim typesSourceCode As String = DownloadSource("http://tpdpwiki.net/wiki/Type_Chart")
+        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='SoD 1.013']/table[@class='wikitable floatleft']/tbody/tr")
+
+        _abilities = Ability.LoadAbilities()
+
+        LoadPuppetsIntoComboBox()
 
     End Sub
-
-    Private Function CreatePuppetForm(name As String, columns As HtmlAgilityPack.HtmlNodeCollection) As PuppetForm
-
-        Return New PuppetForm With {
-            .Name = RemoveHTMLTagsAndNewlines(name),
-            .Type1 = RemoveHTMLTagsAndNewlines(columns(2).InnerText),
-            .Type2 = RemoveHTMLTagsAndNewlines(columns(3).InnerText),
-            .HP = columns(4).InnerText,
-            .FoAtk = columns(5).InnerText,
-            .FoDef = columns(6).InnerText,
-            .SpAtk = columns(7).InnerText,
-            .SpDef = columns(8).InnerText,
-            .Spd = columns(9).InnerText,
-            .Cost = columns(11).InnerText
-        }
-
-    End Function
 
     Private Sub cmb_CharacterSelect_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmb_CharacterSelect.SelectedIndexChanged
 
@@ -236,20 +246,30 @@ Public Class MainWindow
         btn_Form3.Enabled = True
         btn_Form4.Enabled = True
 
-        btn_Form1_Click(btn_Form1, e)
+        FormButtonClick(btn_Form1, e)
 
     End Sub
 
-    Private Sub btn_Form1_Click(sender As Object, e As EventArgs) Handles btn_Form1.Click, btn_Form2.Click, btn_Form3.Click, btn_Form4.Click
-        ChangeButtonEnabledState(sender)
-        UpdateValues(sender)
+    Private Sub FormButtonClick(sender As Object, e As EventArgs) Handles btn_Form1.Click, btn_Form2.Click, btn_Form3.Click, btn_Form4.Click
+
+        If Not _puppetList.Select(Function(x) x.Name).Contains(cmb_CharacterSelect.Text) Then Exit Sub
+
+        ChangeButtonEnabledState(sender, "btn_Form")
+        ChangeButtonEnabledState(btn_StatsBase, "btn_Stats")
+        UpdateStatsAndTypes(sender)
+
     End Sub
 
-    Private Sub ChangeButtonEnabledState(sender As Object)
+    Private Sub StatsButtonClick(sender As Object, e As EventArgs) Handles btn_StatsBase.Click, btn_Stats50Min.Click, btn_Stats50Max.Click
+        ChangeButtonEnabledState(sender, "btn_Stats")
+        UpdateStats(DirectCast(sender, Button).Text, _currentPuppetForm)
+    End Sub
+
+    Private Sub ChangeButtonEnabledState(sender As Object, buttonPrefix As String)
 
         For Each control In Me.Controls
 
-            If TypeOf control Is Button AndAlso Not control Is sender Then
+            If TypeOf control Is Button AndAlso DirectCast(control, Button).Name.StartsWith(buttonPrefix) AndAlso Not control Is sender Then
                 DirectCast(control, Button).Enabled = True
             End If
 
@@ -259,51 +279,181 @@ Public Class MainWindow
 
     End Sub
 
-    Private Sub UpdateValues(sender As Object)
+    Private Sub UpdateStatsAndTypes(sender As Object)
 
         Dim formName = DirectCast(sender, Button).Text
-        Dim puppetForm = _puppetList.Where(Function(x) x.Name.Equals(cmb_CharacterSelect.Text)).FirstOrDefault().Forms.Where(Function(x) x.Name.Equals(formName)).FirstOrDefault()
+        _currentPuppetForm = _puppetList.Where(Function(x) x.Name.Equals(cmb_CharacterSelect.Text)).FirstOrDefault().Forms.Where(Function(x) x.Name.Equals(formName)).FirstOrDefault()
 
-        Dim type1 = _types.Where(Function(x) x.Name.Equals(puppetForm.Type1)).FirstOrDefault()
-        lbl_Type1.Text = puppetForm.Type1
-        SetPuppetLabelColor(type1, lbl_Type1)
+        Dim type1 = _types.Where(Function(x) x.Name.Equals(_currentPuppetForm.Type1)).FirstOrDefault()
+        lbl_Type1.Text = _currentPuppetForm.Type1
+        SetTypeLabelColor(type1, lbl_Type1)
 
-        Dim type2 = _types.Where(Function(x) x.Name.Equals(puppetForm.Type2)).FirstOrDefault()
-        lbl_Type2.Text = puppetForm.Type2
-        SetPuppetLabelColor(type2, lbl_Type2)
+        Dim type2 = _types.Where(Function(x) x.Name.Equals(_currentPuppetForm.Type2)).FirstOrDefault()
+        lbl_Type2.Text = _currentPuppetForm.Type2
+        SetTypeLabelColor(type2, lbl_Type2)
 
-        lbl_HPValue.Text = puppetForm.HP
-        lbl_FoAtkValue.Text = puppetForm.FoAtk
-        lbl_FoDefValue.Text = puppetForm.FoDef
-        lbl_SpAtkValue.Text = puppetForm.SpAtk
-        lbl_SpDefValue.Text = puppetForm.SpDef
-        lbl_SpdValue.Text = puppetForm.Spd
-        lbl_CostValue.Text = puppetForm.Cost
+        UpdateStats(btn_StatsBase.Text, _currentPuppetForm)
+        lbl_CostValue.Text = _currentPuppetForm.Cost
 
-        lbl_HPBG.Width = 356 / _maxValue * puppetForm.HP
-        lbl_FoAtkBG.Width = 356 / _maxValue * puppetForm.FoAtk
-        lbl_FoDefBG.Width = 356 / _maxValue * puppetForm.FoDef
-        lbl_SpAtkBG.Width = 356 / _maxValue * puppetForm.SpAtk
-        lbl_SpDefBG.Width = 356 / _maxValue * puppetForm.SpDef
-        lbl_SpdBG.Width = 356 / _maxValue * puppetForm.Spd
+        lbl_Ability1.Text = String.Concat("Ability 1: ", _currentPuppetForm.Ability1)
+        lbl_Ability2.Text = String.Concat("Ability 2: ", _currentPuppetForm.Ability2)
 
-        RemoveTypeLabels()
+        RemoveTypeLabels("dynTypeLbl_")
+        RemoveTypeLabels("dynAbilityTypeLbl_")
 
         UpdateTypeEffectiveness(type1, True)
         UpdateTypeEffectiveness(type2, False)
 
         AddTypeLabels()
+        AddAbilityTypeLabels(_currentPuppetForm.Ability1, 12, 343, type1, type2)
+        AddAbilityTypeLabels(_currentPuppetForm.Ability2, 238, 343, type1, type2)
 
     End Sub
 
-    Private Sub SetPuppetLabelColor(type As Type, label As Label)
+    Private Sub UpdateStats(text As String, puppetForm As PuppetForm)
 
-        If type Is Nothing OrElse type.Name.Equals("None") Then
-            label.BackColor = Color.Transparent
-            label.ForeColor = Color.Black
+        Select Case text
+            Case btn_StatsBase.Text
+                UpdateStats(puppetForm.BaseHP, puppetForm.BaseFoAtk, puppetForm.BaseFoDef, puppetForm.BaseSpAtk, puppetForm.BaseSpDef, puppetForm.BaseSpd)
+            Case btn_Stats50Min.Text
+                UpdateStats(puppetForm.MinHP, puppetForm.MinFoAtk, puppetForm.MinFoDef, puppetForm.MinSpAtk, puppetForm.MinSpDef, puppetForm.MinSpd)
+            Case btn_Stats50Max.Text
+                UpdateStats(puppetForm.MaxHP, puppetForm.MaxFoAtk, puppetForm.MaxFoDef, puppetForm.MaxSpAtk, puppetForm.MaxSpDef, puppetForm.MaxSpd)
+        End Select
+
+    End Sub
+
+    Private Sub UpdateStats(hp As Integer, foAtk As Integer, foDef As Integer, spAtk As Integer, spDef As Integer, spd As Double)
+
+        lbl_HPValue.Text = hp
+        lbl_FoAtkValue.Text = foAtk
+        lbl_FoDefValue.Text = foDef
+        lbl_SpAtkValue.Text = spAtk
+        lbl_SpDefValue.Text = spDef
+        lbl_SpdValue.Text = spd
+
+        lbl_HPBG.Width = 242 / _maxValue * hp
+        lbl_FoAtkBG.Width = 242 / _maxValue * foAtk
+        lbl_FoDefBG.Width = 242 / _maxValue * foDef
+        lbl_SpAtkBG.Width = 242 / _maxValue * spAtk
+        lbl_SpDefBG.Width = 242 / _maxValue * spDef
+        lbl_SpdBG.Width = 242 / _maxValue * spd
+
+    End Sub
+
+    Private Sub RemoveTypeLabels(prefix As String)
+
+        Dim controlList As New List(Of Object)
+
+        For Each control In Me.Controls
+            If TypeOf control Is Label AndAlso DirectCast(control, Label).Name.Contains(prefix) Then controlList.Add(control)
+        Next
+
+        For Each control In controlList
+            Me.Controls.Remove(control)
+        Next
+
+    End Sub
+
+    Private Sub AddTypeLabels()
+
+        Dim column As Integer = 0
+        Dim rowSpace As Integer = 0
+
+        For Each type In _types.Where(Function(x) x.Effectiveness <> 1).OrderByDescending(Function(x) x.Effectiveness)
+
+            AddLabelToForm(type.Name, type.Effectiveness, "dynTypeLbl_", 12 + (113 * column), 200 + rowSpace, type)
+
+            column += 1
+
+            If column Mod 4 = 0 Then
+
+                column = 0
+                rowSpace += 28
+
+            End If
+
+        Next
+
+    End Sub
+
+    Private Sub AddAbilityTypeLabels(abilityName As String, xPos As Integer, yPos As Integer, type1 As Type, type2 As Type)
+
+        If abilityName.Equals("Affinity Twist") Then
+
+            Dim reversedTypeChart = New List(Of TypeChart)
+
+            For Each typeChart In _typeChart
+                reversedTypeChart.Add(New TypeChart With {
+                    .X = typeChart.X,
+                    .Y = typeChart.Y,
+                    .Value = typeChart.Value
+                })
+            Next
+
+            For Each typeChart In reversedTypeChart
+
+                Select Case typeChart.Value
+                    Case 0
+                        typeChart.Value = 1
+                    Case Else
+                        typeChart.Value = 1 / typeChart.Value
+                End Select
+
+            Next
+
+            Dim typeList As New List(Of Type)
+            UpdateTypeEffectiveness(type1, True, reversedTypeChart, typeList)
+            UpdateTypeEffectiveness(type2, False, reversedTypeChart, typeList)
+
+            Dim column As Integer = 0
+            Dim rowSpace As Integer = 0
+
+            For Each type In typeList.Where(Function(x) x.Effectiveness <> _types.Where(Function(y) y.Name.Equals(x.Name)).FirstOrDefault().Effectiveness).OrderByDescending(Function(x) x.Effectiveness)
+
+                AddLabelToForm(type.Name, type.Effectiveness, "dynAbilityTypeLbl_", xPos + (113 * column), yPos + rowSpace, type)
+
+                column += 1
+
+                If column Mod 2 = 0 Then
+
+                    column = 0
+                    rowSpace += 28
+
+                End If
+
+            Next
+
         Else
-            label.BackColor = ColorTranslator.FromHtml(type.BackColor)
-            label.ForeColor = ColorTranslator.FromHtml(type.Color)
+
+            Dim ability = _abilities.Where(Function(x) x.Name.Equals(abilityName)).FirstOrDefault()
+
+            If ability Is Nothing Then Exit Sub
+
+            For Each effectiveness In ability.Effectivenesses
+                Dim typeEffectiveness = _types.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault().Effectiveness
+                effectiveness.CalculatedEffectiveness = typeEffectiveness * effectiveness.Effectiveness
+            Next
+
+            Dim column As Integer = 0
+            Dim rowSpace As Integer = 0
+
+            For Each effectiveness In ability.Effectivenesses.OrderByDescending(Function(x) x.CalculatedEffectiveness)
+
+                Dim type = _types.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault()
+                AddLabelToForm(effectiveness.TypeName, effectiveness.CalculatedEffectiveness, "dynAbilityTypeLbl_", xPos + (113 * column), yPos + rowSpace, type)
+
+                column += 1
+
+                If column Mod 2 = 0 Then
+
+                    column = 0
+                    rowSpace += 28
+
+                End If
+
+            Next
+
         End If
 
     End Sub
@@ -326,42 +476,32 @@ Public Class MainWindow
 
     End Sub
 
-    Private Sub RemoveTypeLabels()
+    Private Sub UpdateTypeEffectiveness(defendingType As Type, resetEffectiveness As Boolean, reversedTypeChart As List(Of TypeChart), ByRef typeList As List(Of Type))
 
-        For Each type In _types.Where(Function(x) x.Effectiveness <> 1).OrderByDescending(Function(x) x.Effectiveness)
-            Dim control = Me.Controls.Find(String.Concat("dynLbl_", type.Name), True).FirstOrDefault()
-            Me.Controls.Remove(control)
-        Next
+        If defendingType Is Nothing OrElse defendingType.Name.Equals("None") Then Exit Sub
 
-    End Sub
+        For Each typeChart In reversedTypeChart.Where(Function(x) x.X = defendingType.Pos)
 
-    Private Sub AddTypeLabels()
+            Dim attackingType = _types.Where(Function(x) x.Pos = typeChart.Y).FirstOrDefault()
+            Dim newAttackingType = typeList.Where(Function(x) x.Name.Equals(attackingType.Name)).FirstOrDefault()
 
-        Dim column As Integer = 0
-        Dim rowSpace As Integer = 0
+            If newAttackingType Is Nothing Then
 
-        For Each type In _types.Where(Function(x) x.Effectiveness <> 1).OrderByDescending(Function(x) x.Effectiveness)
+                newAttackingType = New Type With {
+                    .Name = attackingType.Name,
+                    .Pos = attackingType.Pos,
+                    .BackColor = attackingType.BackColor,
+                    .Color = attackingType.Color
+                }
 
-            Dim label As New Label
-            label.Text = String.Concat(type.Name, " x ", type.Effectiveness)
-            label.Font = lbl_Type1.Font
-            label.Name = String.Concat("dynLbl_", type.Name)
-            label.AutoSize = False
-            label.Size = New Size(100, 23)
-            label.Location = New Point(12 + (113 * column), 200 + rowSpace)
-            label.TextAlign = ContentAlignment.MiddleCenter
-            label.BackColor = ColorTranslator.FromHtml(type.BackColor)
-            label.ForeColor = ColorTranslator.FromHtml(type.Color)
+                typeList.Add(newAttackingType)
 
-            Me.Controls.Add(label)
+            End If
 
-            column += 1
-
-            If column Mod 4 = 0 Then
-
-                column = 0
-                rowSpace += 28
-
+            If resetEffectiveness Then
+                newAttackingType.Effectiveness = typeChart.Value
+            Else
+                newAttackingType.Effectiveness *= typeChart.Value
             End If
 
         Next
@@ -372,6 +512,18 @@ Public Class MainWindow
         ChangePuppetsOrder()
     End Sub
 
+    Private Sub ChangePuppetsOrder()
+
+        If _sorted Then
+            cmb_CharacterSelect.DataSource = _puppetList.Select(Function(x) x.Name).ToList()
+            _sorted = False
+        Else
+            cmb_CharacterSelect.DataSource = _puppetList.Select(Function(x) x.Name).OrderBy(Function(x) x).ToList()
+            _sorted = True
+        End If
+
+    End Sub
+
     Private Sub MainWindow_KeyDown(sender As Object, e As KeyEventArgs) Handles MyBase.KeyDown
         If e.KeyCode = Keys.Escape Then Me.Close()
     End Sub
@@ -380,8 +532,83 @@ Public Class MainWindow
         If e.KeyCode = Keys.Escape Then Me.ActiveControl = Nothing
     End Sub
 
+#End Region
+
+#Region "Support Functions"
+
+    Private Function CreatePuppetForm(name As String, columns As HtmlAgilityPack.HtmlNodeCollection) As PuppetForm
+
+        Return New PuppetForm With {
+            .Name = RemoveHTMLTagsAndNewlines(name),
+            .Type1 = RemoveHTMLTagsAndNewlines(columns(2).InnerText),
+            .Type2 = RemoveHTMLTagsAndNewlines(columns(3).InnerText),
+            .BaseHP = columns(4).InnerText,
+            .BaseFoAtk = columns(5).InnerText,
+            .BaseFoDef = columns(6).InnerText,
+            .BaseSpAtk = columns(7).InnerText,
+            .BaseSpDef = columns(8).InnerText,
+            .BaseSpd = columns(9).InnerText,
+            .Cost = columns(11).InnerText,
+            .MinHP = CalculateStat(True, columns(4).InnerText, 0D, 0D, 50D),
+            .MinFoAtk = CalculateStat(False, columns(5).InnerText, 0D, 0D, 50D),
+            .MinFoDef = CalculateStat(False, columns(6).InnerText, 0D, 0D, 50D),
+            .MinSpAtk = CalculateStat(False, columns(7).InnerText, 0D, 0D, 50D),
+            .MinSpDef = CalculateStat(False, columns(8).InnerText, 0D, 0D, 50D),
+            .MinSpd = CalculateStat(False, columns(9).InnerText, 0D, 0D, 50D),
+            .MaxHP = CalculateStat(True, columns(4).InnerText, 15D, 64D, 50D),
+            .MaxFoAtk = CalculateStat(False, columns(5).InnerText, 15D, 64D, 50D, 1.1D),
+            .MaxFoDef = CalculateStat(False, columns(6).InnerText, 15D, 64D, 50D, 1.1D),
+            .MaxSpAtk = CalculateStat(False, columns(7).InnerText, 15D, 64D, 50D, 1.1D),
+            .MaxSpDef = CalculateStat(False, columns(8).InnerText, 15D, 64D, 50D, 1.1D),
+            .MaxSpd = CalculateStat(False, columns(9).InnerText, 15D, 64D, 50D, 1.1D),
+            .Ability1 = RemoveHTMLTagsAndNewlines(columns(12).InnerText),
+            .Ability2 = RemoveHTMLTagsAndNewlines(columns(13).InnerText)
+        }
+
+    End Function
+
+    Private Function CalculateStat(isHP As Boolean, baseStat As Decimal, rank As Decimal, ev As Decimal, level As Decimal, Optional emblem As Decimal = 1) As Integer
+
+        If isHP Then
+            Return Math.Floor((((2D * (baseStat + rank) + ev) / 100D) + 1D) * level + 10D)
+        Else
+            Return Math.Floor(Math.Floor((2D * (baseStat + rank) + ev) / 100D * level + 5D) * emblem)
+        End If
+
+    End Function
+
+    Private Sub AddLabelToForm(typeName As String, effectiveness As Double, labelPrefix As String, xPos As Integer, yPos As Integer, type As Type)
+
+        Dim label As New Label
+        label.Text = String.Concat(typeName, " x ", effectiveness)
+        label.Font = lbl_Type1.Font
+        label.Name = String.Concat(labelPrefix, typeName)
+        label.AutoSize = False
+        label.Size = New Size(100, 23)
+        label.Location = New Point(xPos, yPos)
+        label.TextAlign = ContentAlignment.MiddleCenter
+        SetTypeLabelColor(type, label)
+
+        Me.Controls.Add(label)
+
+    End Sub
+
+    Private Sub SetTypeLabelColor(type As Type, label As Label)
+
+        If type Is Nothing OrElse type.Name.Equals("None") Then
+            label.BackColor = Color.Transparent
+            label.ForeColor = Color.Black
+        Else
+            label.BackColor = ColorTranslator.FromHtml(type.BackColor)
+            label.ForeColor = ColorTranslator.FromHtml(type.Color)
+        End If
+
+    End Sub
+
     Private Function RemoveHTMLTagsAndNewlines(str As String) As String
         Return Regex.Replace(str, "<.*?>", String.Empty).Replace(vbCrLf, Nothing).Replace(vbCr, Nothing).Replace(vbLf, Nothing)
     End Function
+
+#End Region
 
 End Class

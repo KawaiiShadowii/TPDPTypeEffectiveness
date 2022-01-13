@@ -61,9 +61,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
@@ -81,6 +81,8 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ability Classes\Ability.vb" />
+    <Compile Include="Ability Classes\AbilityEffectiveness.vb" />
     <Compile Include="MainWindow.Designer.vb">
       <DependentUpon>MainWindow.vb</DependentUpon>
     </Compile>
@@ -105,7 +107,7 @@
     <Compile Include="Puppet Classes\PuppetForm.vb" />
     <Compile Include="Puppet Classes\Puppet.vb" />
     <Compile Include="Type Classes\Type.vb" />
-    <Compile Include="Type Classes\Typechart.vb" />
+    <Compile Include="Type Classes\TypeChart.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MainWindow.resx">
@@ -135,5 +137,6 @@
   <ItemGroup>
     <Content Include="TPDPTypeEffectivenessIcon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>
