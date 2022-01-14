@@ -57,6 +57,7 @@ Partial Class MainWindow
         Me.lbl_Ability1 = New System.Windows.Forms.Label()
         Me.lbl_Ability2 = New System.Windows.Forms.Label()
         Me.lbl_AbilitySplit = New System.Windows.Forms.Label()
+        Me.btn_FanCharacters = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'cmb_CharacterSelect
@@ -67,7 +68,7 @@ Partial Class MainWindow
         Me.cmb_CharacterSelect.IntegralHeight = False
         Me.cmb_CharacterSelect.Location = New System.Drawing.Point(12, 12)
         Me.cmb_CharacterSelect.Name = "cmb_CharacterSelect"
-        Me.cmb_CharacterSelect.Size = New System.Drawing.Size(326, 21)
+        Me.cmb_CharacterSelect.Size = New System.Drawing.Size(213, 21)
         Me.cmb_CharacterSelect.TabIndex = 0
         '
         'btn_Form1
@@ -321,7 +322,7 @@ Partial Class MainWindow
         'btn_Order
         '
         Me.btn_Order.FlatStyle = System.Windows.Forms.FlatStyle.Flat
-        Me.btn_Order.Location = New System.Drawing.Point(351, 10)
+        Me.btn_Order.Location = New System.Drawing.Point(238, 10)
         Me.btn_Order.Name = "btn_Order"
         Me.btn_Order.Size = New System.Drawing.Size(100, 23)
         Me.btn_Order.TabIndex = 1
@@ -387,11 +388,22 @@ Partial Class MainWindow
         Me.lbl_AbilitySplit.TabIndex = 32
         Me.lbl_AbilitySplit.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
+        'btn_FanCharacters
+        '
+        Me.btn_FanCharacters.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btn_FanCharacters.Location = New System.Drawing.Point(351, 10)
+        Me.btn_FanCharacters.Name = "btn_FanCharacters"
+        Me.btn_FanCharacters.Size = New System.Drawing.Size(100, 23)
+        Me.btn_FanCharacters.TabIndex = 33
+        Me.btn_FanCharacters.Text = "Add FanChara"
+        Me.btn_FanCharacters.UseVisualStyleBackColor = True
+        '
         'MainWindow
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(463, 545)
+        Me.Controls.Add(Me.btn_FanCharacters)
         Me.Controls.Add(Me.lbl_AbilitySplit)
         Me.Controls.Add(Me.lbl_Ability2)
         Me.Controls.Add(Me.lbl_Ability1)
@@ -472,4 +484,5 @@ Partial Class MainWindow
     Friend WithEvents lbl_Ability1 As Label
     Friend WithEvents lbl_Ability2 As Label
     Friend WithEvents lbl_AbilitySplit As Label
+    Friend WithEvents btn_FanCharacters As Button
 End Class

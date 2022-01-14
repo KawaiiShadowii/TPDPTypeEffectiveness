@@ -5,11 +5,13 @@ Public Class MainWindow
 
     Private _puppetList As New List(Of Puppet)
     Private _maxValue As Integer
-    Private _types As New List(Of Type)
-    Private _typeChart As New List(Of Typechart)
+    Private _typeList As New List(Of Type)
+    Private _typeChartList As New List(Of TypeChart)
     Private _sorted As Boolean = False
     Private _currentPuppetForm As PuppetForm
-    Private _abilities As List(Of Ability)
+    Private _abilityList As List(Of Ability)
+    Private _extendedPuppetsSourceCode As String = Nothing
+    Private _fanCharaPuppetList As New List(Of String)
 
 #Region "Functions for initial load"
 
@@ -89,7 +91,7 @@ Public Class MainWindow
 
     End Sub
 
-    Private Sub LoadExtendedPuppets(sourceCode As String, rowsSelector As String)
+    Private Sub LoadExtendedPuppets(sourceCode As String, rowsSelector As String, isFanChara As Boolean)
 
         Dim doc As New HtmlAgilityPack.HtmlDocument
         doc.LoadHtml(sourceCode)
@@ -110,10 +112,14 @@ Public Class MainWindow
 
             If tableHeader IsNot Nothing Then
 
+                Dim puppetName As String = RemoveHTMLTagsAndNewlines(tableHeader.InnerText)
+
                 _puppetList.Add(New Puppet With {
-                    .Name = RemoveHTMLTagsAndNewlines(tableHeader.InnerText),
+                    .Name = puppetName,
                     .Forms = New List(Of PuppetForm)
                 })
+
+                If isFanChara Then _fanCharaPuppetList.Add(puppetName)
 
             End If
 
@@ -165,7 +171,7 @@ Public Class MainWindow
             Dim typeBackColor = typeStyles(0).Substring(typeStyles(0).LastIndexOf("#"c), 7)
             Dim typeColor = typeStyles(1).Substring(typeStyles(1).LastIndexOf("#"c), 7)
 
-            _types.Add(New Type With {
+            _typeList.Add(New Type With {
                 .Name = RemoveHTMLTagsAndNewlines(type.InnerText),
                 .Pos = rowPos,
                 .BackColor = typeBackColor,
@@ -189,7 +195,7 @@ Public Class MainWindow
                         value = 0.5
                 End Select
 
-                _typeChart.Add(New Typechart With {
+                _typeChartList.Add(New TypeChart With {
                     .X = columnPos,
                     .Y = rowPos,
                     .Value = value
@@ -206,7 +212,13 @@ Public Class MainWindow
     End Sub
 
     Private Sub LoadPuppetsIntoComboBox()
-        cmb_CharacterSelect.DataSource = _puppetList.Select(Function(x) x.Name).ToList()
+
+        If Not _sorted Then
+            cmb_CharacterSelect.DataSource = _puppetList.Select(Function(x) x.Name).ToList()
+        Else
+            cmb_CharacterSelect.DataSource = _puppetList.Select(Function(x) x.Name).OrderBy(Function(x) x).ToList()
+        End If
+
     End Sub
 
 #End Region
@@ -218,15 +230,15 @@ Public Class MainWindow
         Dim puppetsSourceCode As String = DownloadSource("http://tpdpwiki.net/wiki/Puppetdex")
         LoadPuppets(puppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='SoD 1.103']/table/tbody/tr")
 
-        Dim extendedPuppetsSourceCode As String = DownloadSource("http://en.tpdpwiki.net/wiki/Mod:Mod_Puppetdex")
-        LoadExtendedPuppets(extendedPuppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='Shard of Dreams - Extended -']/table/tbody/tr")
+        _extendedPuppetsSourceCode = DownloadSource("http://en.tpdpwiki.net/wiki/Mod:Mod_Puppetdex")
+        LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='Shard of Dreams - Extended -']/table/tbody/tr", False)
 
         SetMaxValue()
 
         Dim typesSourceCode As String = DownloadSource("http://tpdpwiki.net/wiki/Type_Chart")
         LoadTypesAndTypeChart(typesSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='SoD 1.013']/table[@class='wikitable floatleft']/tbody/tr")
 
-        _abilities = Ability.LoadAbilities()
+        _abilityList = Ability.LoadAbilities()
 
         LoadPuppetsIntoComboBox()
 
@@ -284,11 +296,11 @@ Public Class MainWindow
         Dim formName = DirectCast(sender, Button).Text
         _currentPuppetForm = _puppetList.Where(Function(x) x.Name.Equals(cmb_CharacterSelect.Text)).FirstOrDefault().Forms.Where(Function(x) x.Name.Equals(formName)).FirstOrDefault()
 
-        Dim type1 = _types.Where(Function(x) x.Name.Equals(_currentPuppetForm.Type1)).FirstOrDefault()
+        Dim type1 = _typeList.Where(Function(x) x.Name.Equals(_currentPuppetForm.Type1)).FirstOrDefault()
         lbl_Type1.Text = _currentPuppetForm.Type1
         SetTypeLabelColor(type1, lbl_Type1)
 
-        Dim type2 = _types.Where(Function(x) x.Name.Equals(_currentPuppetForm.Type2)).FirstOrDefault()
+        Dim type2 = _typeList.Where(Function(x) x.Name.Equals(_currentPuppetForm.Type2)).FirstOrDefault()
         lbl_Type2.Text = _currentPuppetForm.Type2
         SetTypeLabelColor(type2, lbl_Type2)
 
@@ -360,7 +372,7 @@ Public Class MainWindow
         Dim column As Integer = 0
         Dim rowSpace As Integer = 0
 
-        For Each type In _types.Where(Function(x) x.Effectiveness <> 1).OrderByDescending(Function(x) x.Effectiveness)
+        For Each type In _typeList.Where(Function(x) x.Effectiveness <> 1).OrderByDescending(Function(x) x.Effectiveness)
 
             AddLabelToForm(type.Name, type.Effectiveness, "dynTypeLbl_", 12 + (113 * column), 200 + rowSpace, type)
 
@@ -383,7 +395,7 @@ Public Class MainWindow
 
             Dim reversedTypeChart = New List(Of TypeChart)
 
-            For Each typeChart In _typeChart
+            For Each typeChart In _typeChartList
                 reversedTypeChart.Add(New TypeChart With {
                     .X = typeChart.X,
                     .Y = typeChart.Y,
@@ -409,7 +421,7 @@ Public Class MainWindow
             Dim column As Integer = 0
             Dim rowSpace As Integer = 0
 
-            For Each type In typeList.Where(Function(x) x.Effectiveness <> _types.Where(Function(y) y.Name.Equals(x.Name)).FirstOrDefault().Effectiveness).OrderByDescending(Function(x) x.Effectiveness)
+            For Each type In typeList.Where(Function(x) x.Effectiveness <> _typeList.Where(Function(y) y.Name.Equals(x.Name)).FirstOrDefault().Effectiveness).OrderByDescending(Function(x) x.Effectiveness)
 
                 AddLabelToForm(type.Name, type.Effectiveness, "dynAbilityTypeLbl_", xPos + (113 * column), yPos + rowSpace, type)
 
@@ -426,12 +438,12 @@ Public Class MainWindow
 
         Else
 
-            Dim ability = _abilities.Where(Function(x) x.Name.Equals(abilityName)).FirstOrDefault()
+            Dim ability = _abilityList.Where(Function(x) x.Name.Equals(abilityName)).FirstOrDefault()
 
             If ability Is Nothing Then Exit Sub
 
             For Each effectiveness In ability.Effectivenesses
-                Dim typeEffectiveness = _types.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault().Effectiveness
+                Dim typeEffectiveness = _typeList.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault().Effectiveness
                 effectiveness.CalculatedEffectiveness = typeEffectiveness * effectiveness.Effectiveness
             Next
 
@@ -440,7 +452,7 @@ Public Class MainWindow
 
             For Each effectiveness In ability.Effectivenesses.OrderByDescending(Function(x) x.CalculatedEffectiveness)
 
-                Dim type = _types.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault()
+                Dim type = _typeList.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault()
                 AddLabelToForm(effectiveness.TypeName, effectiveness.CalculatedEffectiveness, "dynAbilityTypeLbl_", xPos + (113 * column), yPos + rowSpace, type)
 
                 column += 1
@@ -462,9 +474,9 @@ Public Class MainWindow
 
         If defendingType Is Nothing OrElse defendingType.Name.Equals("None") Then Exit Sub
 
-        For Each typeChart In _typeChart.Where(Function(x) x.X = defendingType.Pos)
+        For Each typeChart In _typeChartList.Where(Function(x) x.X = defendingType.Pos)
 
-            Dim attackingType = _types.Where(Function(x) x.Pos = typeChart.Y).FirstOrDefault()
+            Dim attackingType = _typeList.Where(Function(x) x.Pos = typeChart.Y).FirstOrDefault()
 
             If resetEffectiveness Then
                 attackingType.Effectiveness = typeChart.Value
@@ -482,7 +494,7 @@ Public Class MainWindow
 
         For Each typeChart In reversedTypeChart.Where(Function(x) x.X = defendingType.Pos)
 
-            Dim attackingType = _types.Where(Function(x) x.Pos = typeChart.Y).FirstOrDefault()
+            Dim attackingType = _typeList.Where(Function(x) x.Pos = typeChart.Y).FirstOrDefault()
             Dim newAttackingType = typeList.Where(Function(x) x.Name.Equals(attackingType.Name)).FirstOrDefault()
 
             If newAttackingType Is Nothing Then
@@ -521,6 +533,30 @@ Public Class MainWindow
             cmb_CharacterSelect.DataSource = _puppetList.Select(Function(x) x.Name).OrderBy(Function(x) x).ToList()
             _sorted = True
         End If
+
+    End Sub
+
+    Private Sub btn_FanCharacters_Click(sender As Object, e As EventArgs) Handles btn_FanCharacters.Click
+
+        If btn_FanCharacters.Text.Equals("Add FanChara") Then
+
+            Dim addToList As Boolean = False
+            If _fanCharaPuppetList.Count = 0 Then addToList = True
+
+            LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='Shard of Dreams - Extended - FanChara -']/table/tbody/tr", addToList)
+            btn_FanCharacters.Text = "No FanChara"
+
+        Else
+
+            For Each fanCharaPuppet In _fanCharaPuppetList
+                _puppetList.Remove(_puppetList.Where(Function(x) x.Name.Equals(fanCharaPuppet)).FirstOrDefault())
+            Next
+
+            btn_FanCharacters.Text = "Add FanChara"
+
+        End If
+
+        LoadPuppetsIntoComboBox()
 
     End Sub
 
