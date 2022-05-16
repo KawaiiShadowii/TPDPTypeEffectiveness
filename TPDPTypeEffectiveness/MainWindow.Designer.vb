@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class MainWindow
     Inherits System.Windows.Forms.Form
 
     'Form overrides dispose to clean up the component list.
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,7 +20,7 @@ Partial Class MainWindow
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.  
     'Do not modify it using the code editor.
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(MainWindow))
         Me.cmb_CharacterSelect = New System.Windows.Forms.ComboBox()
@@ -77,7 +77,7 @@ Partial Class MainWindow
         Me.btn_Form1.Location = New System.Drawing.Point(12, 39)
         Me.btn_Form1.Name = "btn_Form1"
         Me.btn_Form1.Size = New System.Drawing.Size(100, 23)
-        Me.btn_Form1.TabIndex = 2
+        Me.btn_Form1.TabIndex = 3
         Me.btn_Form1.Text = "Form 1"
         Me.btn_Form1.UseVisualStyleBackColor = True
         '
@@ -87,7 +87,7 @@ Partial Class MainWindow
         Me.btn_Form2.Location = New System.Drawing.Point(125, 39)
         Me.btn_Form2.Name = "btn_Form2"
         Me.btn_Form2.Size = New System.Drawing.Size(100, 23)
-        Me.btn_Form2.TabIndex = 3
+        Me.btn_Form2.TabIndex = 4
         Me.btn_Form2.Text = "Form 2"
         Me.btn_Form2.UseVisualStyleBackColor = True
         '
@@ -97,7 +97,7 @@ Partial Class MainWindow
         Me.btn_Form3.Location = New System.Drawing.Point(238, 39)
         Me.btn_Form3.Name = "btn_Form3"
         Me.btn_Form3.Size = New System.Drawing.Size(100, 23)
-        Me.btn_Form3.TabIndex = 4
+        Me.btn_Form3.TabIndex = 5
         Me.btn_Form3.Text = "Form 3"
         Me.btn_Form3.UseVisualStyleBackColor = True
         '
@@ -107,7 +107,7 @@ Partial Class MainWindow
         Me.btn_Form4.Location = New System.Drawing.Point(351, 39)
         Me.btn_Form4.Name = "btn_Form4"
         Me.btn_Form4.Size = New System.Drawing.Size(100, 23)
-        Me.btn_Form4.TabIndex = 5
+        Me.btn_Form4.TabIndex = 6
         Me.btn_Form4.Text = "Form 4"
         Me.btn_Form4.UseVisualStyleBackColor = True
         '
@@ -394,7 +394,7 @@ Partial Class MainWindow
         Me.btn_FanCharacters.Location = New System.Drawing.Point(351, 10)
         Me.btn_FanCharacters.Name = "btn_FanCharacters"
         Me.btn_FanCharacters.Size = New System.Drawing.Size(100, 23)
-        Me.btn_FanCharacters.TabIndex = 33
+        Me.btn_FanCharacters.TabIndex = 2
         Me.btn_FanCharacters.Text = "Add FanChara"
         Me.btn_FanCharacters.UseVisualStyleBackColor = True
         '

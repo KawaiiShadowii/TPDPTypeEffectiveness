@@ -162,7 +162,6 @@ Public Class MainWindow
         rows.RemoveAt(0)
 
         Dim rowPos As Integer = 0
-        Dim columnPos As Integer = 0
 
         For Each row In rows
 
@@ -178,7 +177,7 @@ Public Class MainWindow
                 .Color = typeColor
             })
 
-            columnPos = 0
+            Dim columnPos As Integer = 0
 
             For Each column In row.SelectNodes("td")
 
@@ -245,26 +244,51 @@ Public Class MainWindow
     End Sub
 
     Private Sub cmb_CharacterSelect_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cmb_CharacterSelect.SelectedIndexChanged
+        ChangePupetInfo()
+    End Sub
 
-        Dim puppet = _puppetList.Where(Function(x) x.Name.Equals(cmb_CharacterSelect.Text)).FirstOrDefault()
+    Private Sub ChangePupetInfo()
+
+        Dim formInitial As String = Nothing
+        Dim puppetName As String
+
+        If cmb_CharacterSelect.Text.Contains("_"c) Then
+
+            puppetName = cmb_CharacterSelect.Text.Remove(0, cmb_CharacterSelect.Text.IndexOf("_"c) + 1)
+            formInitial = cmb_CharacterSelect.Text.Substring(0, cmb_CharacterSelect.Text.IndexOf("_"c)).ToUpper()
+
+        Else
+            puppetName = cmb_CharacterSelect.Text
+        End If
+
+        Dim puppet = _puppetList.Where(Function(x) x.Name.ToLower().Equals(puppetName.ToLower())).FirstOrDefault()
+        If puppet Is Nothing Then Exit Sub
 
         btn_Form1.Text = puppet.Forms(0).Name
         btn_Form2.Text = puppet.Forms(1).Name
         btn_Form3.Text = puppet.Forms(2).Name
         btn_Form4.Text = puppet.Forms(3).Name
 
-        btn_Form1.Enabled = False
-        btn_Form2.Enabled = True
-        btn_Form3.Enabled = True
-        btn_Form4.Enabled = True
+        Dim button As Button = Nothing
+        If Not String.IsNullOrWhiteSpace(formInitial) Then button = Me.Controls.OfType(Of Button).Where(Function(x) x.Name.StartsWith("btn_Form") AndAlso x.Text.StartsWith(formInitial)).FirstOrDefault()
 
-        FormButtonClick(btn_Form1, e)
+        cmb_CharacterSelect.Text = puppetName
+
+        If button IsNot Nothing Then
+            FormButtonClick(button)
+        Else
+            FormButtonClick(btn_Form1)
+        End If
 
     End Sub
 
-    Private Sub FormButtonClick(sender As Object, e As EventArgs) Handles btn_Form1.Click, btn_Form2.Click, btn_Form3.Click, btn_Form4.Click
+    Private Sub FormButtonClickEvent(sender As Object, e As EventArgs) Handles btn_Form1.Click, btn_Form2.Click, btn_Form3.Click, btn_Form4.Click
+        FormButtonClick(sender)
+    End Sub
 
-        If Not _puppetList.Select(Function(x) x.Name).Contains(cmb_CharacterSelect.Text) Then Exit Sub
+    Private Sub FormButtonClick(sender As Object)
+
+        If Not _puppetList.Select(Function(x) x.Name.ToLower()).Contains(cmb_CharacterSelect.Text.ToLower()) Then Exit Sub
 
         ChangeButtonEnabledState(sender, "btn_Form")
         ChangeButtonEnabledState(btn_StatsBase, "btn_Stats")
@@ -272,7 +296,7 @@ Public Class MainWindow
 
     End Sub
 
-    Private Sub StatsButtonClick(sender As Object, e As EventArgs) Handles btn_StatsBase.Click, btn_Stats50Min.Click, btn_Stats50Max.Click
+    Private Sub StatsButtonClickEvent(sender As Object, e As EventArgs) Handles btn_StatsBase.Click, btn_Stats50Min.Click, btn_Stats50Max.Click
         ChangeButtonEnabledState(sender, "btn_Stats")
         UpdateStats(DirectCast(sender, Button).Text, _currentPuppetForm)
     End Sub
@@ -294,7 +318,7 @@ Public Class MainWindow
     Private Sub UpdateStatsAndTypes(sender As Object)
 
         Dim formName = DirectCast(sender, Button).Text
-        _currentPuppetForm = _puppetList.Where(Function(x) x.Name.Equals(cmb_CharacterSelect.Text)).FirstOrDefault().Forms.Where(Function(x) x.Name.Equals(formName)).FirstOrDefault()
+        _currentPuppetForm = _puppetList.Where(Function(x) x.Name.ToLower().Equals(cmb_CharacterSelect.Text.ToLower())).FirstOrDefault().Forms.Where(Function(x) x.Name.Equals(formName)).FirstOrDefault()
 
         Dim type1 = _typeList.Where(Function(x) x.Name.Equals(_currentPuppetForm.Type1)).FirstOrDefault()
         lbl_Type1.Text = _currentPuppetForm.Type1
@@ -565,7 +589,14 @@ Public Class MainWindow
     End Sub
 
     Private Sub KeyDownEvent(sender As Object, e As KeyEventArgs) Handles cmb_CharacterSelect.KeyDown, btn_Order.KeyDown, btn_Form4.KeyDown, btn_Form3.KeyDown, btn_Form2.KeyDown, btn_Form1.KeyDown
+
         If e.KeyCode = Keys.Escape Then Me.ActiveControl = Nothing
+
+        If sender Is cmb_CharacterSelect Then
+            If e.KeyCode <> Keys.Up AndAlso e.KeyCode <> Keys.Down AndAlso cmb_CharacterSelect.DroppedDown Then cmb_CharacterSelect.DroppedDown = False
+            If e.KeyCode = Keys.Enter Then ChangePupetInfo()
+        End If
+
     End Sub
 
 #End Region
