@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports System.Net
 Imports System.Text.RegularExpressions
 
 Public Class MainWindow
@@ -19,24 +20,13 @@ Public Class MainWindow
 
         Try
 
-            Using process As New Process()
-
-                Dim processStartInfo As New ProcessStartInfo("curl", url)
-                processStartInfo.UseShellExecute = False
-                processStartInfo.RedirectStandardOutput = True
-                processStartInfo.CreateNoWindow = True
-                process.StartInfo = processStartInfo
-                process.Start()
-
-                Using reader As StreamReader = process.StandardOutput
-                    Return reader.ReadToEnd()
-                End Using
-
+            Using client As New WebClient()
+                Return client.DownloadString(url)
             End Using
 
         Catch
 
-            MessageBox.Show(String.Concat($"An error occured while requesting {url}. Please make sure that you have installed cURL correctly. If the error still occurs, please contact Kawaii Shadowii."),
+            MessageBox.Show(String.Concat($"An error occured while requesting {url}. It is possible that the wiki is offline. If the error still occurs after some time, please contact Kawaii Shadowii#4571 on Discord."),
                             "Error",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error)
@@ -54,7 +44,7 @@ Public Class MainWindow
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
 
         If rows Is Nothing Then
-            MessageBox.Show("An error occured while loading the rows from the puppet table. Please contact Kawaii Shadowii.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("An error occured while loading the rows from the puppet table. Please contact Kawaii Shadowii#4571 on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Environment.Exit(0)
         End If
 
@@ -99,7 +89,7 @@ Public Class MainWindow
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
 
         If rows Is Nothing Then
-            MessageBox.Show("An error occured while loading the rows from the extended puppet table. Please contact Kawaii Shadowii.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("An error occured while loading the rows from the extended puppet table. Please contact Kawaii Shadowii#4571 on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Environment.Exit(0)
         End If
 
@@ -155,7 +145,7 @@ Public Class MainWindow
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
 
         If rows Is Nothing Then
-            MessageBox.Show("An error occured while loading the rows from the type chart. Please contact Kawaii Shadowii.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("An error occured while loading the rows from the type chart. Please contact Kawaii Shadowii#4571 on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Environment.Exit(0)
         End If
 
@@ -165,10 +155,10 @@ Public Class MainWindow
 
         For Each row In rows
 
-            Dim type = row.SelectSingleNode("th")
+            Dim type = row.SelectSingleNode("td")
             Dim typeStyles = type.Attributes.AttributesWithName("style").FirstOrDefault().Value.Split(";"c)
-            Dim typeBackColor = typeStyles(0).Substring(typeStyles(0).LastIndexOf("#"c), 7)
-            Dim typeColor = typeStyles(1).Substring(typeStyles(1).LastIndexOf("#"c), 7)
+            Dim typeBackColor = typeStyles(1).Substring(typeStyles(1).LastIndexOf("#"c), 7)
+            Dim typeColor = typeStyles(2).Substring(typeStyles(2).LastIndexOf("#"c), 7)
 
             _typeList.Add(New Type With {
                 .Name = RemoveHTMLTagsAndNewlines(type.InnerText),
@@ -179,7 +169,7 @@ Public Class MainWindow
 
             Dim columnPos As Integer = 0
 
-            For Each column In row.SelectNodes("td")
+            For Each column In row.SelectNodes("td").Skip(1)
 
                 Dim value As Double = 1
 
@@ -226,16 +216,16 @@ Public Class MainWindow
 
     Private Sub MainWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
-        Dim puppetsSourceCode As String = DownloadSource("http://tpdpwiki.net/wiki/Puppetdex")
-        LoadPuppets(puppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='SoD 1.103']/table/tbody/tr")
+        Dim puppetsSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Puppetdex")
+        LoadPuppets(puppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='SoD 1.103']/table/tbody/tr")
 
-        _extendedPuppetsSourceCode = DownloadSource("http://en.tpdpwiki.net/wiki/Mod:Mod_Puppetdex")
-        LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='Shard of Dreams - Extended -']/table/tbody/tr", False)
+        '_extendedPuppetsSourceCode = DownloadSource("http://en.tpdpwiki.net/wiki/Mod:Mod_Puppetdex")
+        'LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='Shard of Dreams - Extended -']/table/tbody/tr", False)
 
         SetMaxValue()
 
-        Dim typesSourceCode As String = DownloadSource("http://tpdpwiki.net/wiki/Type_Chart")
-        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='SoD 1.013']/table[@class='wikitable floatleft']/tbody/tr")
+        Dim typesSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Type_Chart")
+        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='SoD 1.103']/table[@class='wikitable'][1]/tbody/tr")
 
         _abilityList = Ability.LoadAbilities()
 

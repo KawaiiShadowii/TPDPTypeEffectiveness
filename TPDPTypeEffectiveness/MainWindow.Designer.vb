@@ -390,6 +390,7 @@ Partial Class MainWindow
         '
         'btn_FanCharacters
         '
+        Me.btn_FanCharacters.Enabled = False
         Me.btn_FanCharacters.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.btn_FanCharacters.Location = New System.Drawing.Point(351, 10)
         Me.btn_FanCharacters.Name = "btn_FanCharacters"
