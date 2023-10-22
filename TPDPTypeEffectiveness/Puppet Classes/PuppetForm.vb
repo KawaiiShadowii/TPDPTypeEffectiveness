@@ -23,4 +23,5 @@
     Public MaxSpd As Integer
     Public Ability1 As String
     Public Ability2 As String
+    Public SubForms As List(Of PuppetForm)
 End Class

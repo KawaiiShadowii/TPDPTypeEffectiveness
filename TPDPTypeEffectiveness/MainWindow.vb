@@ -26,7 +26,7 @@ Public Class MainWindow
 
         Catch
 
-            MessageBox.Show(String.Concat($"An error occured while requesting {url}. It is possible that the wiki is offline. If the error still occurs after some time, please contact Kawaii Shadowii#4571 on Discord."),
+            MessageBox.Show(String.Concat($"An error occured while requesting {url}. It is possible that the wiki is offline. If the error still occurs after some time, please contact @kawaii_shadowii on Discord."),
                             "Error",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error)
@@ -44,7 +44,7 @@ Public Class MainWindow
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
 
         If rows Is Nothing Then
-            MessageBox.Show("An error occured while loading the rows from the puppet table. Please contact Kawaii Shadowii#4571 on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("An error occured while loading the rows from the puppet table. Please contact @kawaii_shadowii on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Environment.Exit(0)
         End If
 
@@ -58,11 +58,20 @@ Public Class MainWindow
             Dim formName = RemoveHTMLTagsAndNewlines(columns(1).InnerText)
             Dim puppetFormName = formName.Split(" "c)
             Dim puppetForm = puppetFormName.FirstOrDefault()
-            Dim puppetName = puppetFormName.LastOrDefault()
+            Dim puppetName = puppetFormName.LastOrDefault().TrimEnd("*"c)
 
-            If _puppetList.Any(Function(x) x.Name.Equals(puppetName)) Then
+            Dim listPuppet = _puppetList.Where(Function(x) x.Name.Equals(puppetName)).FirstOrDefault()
 
-                _puppetList.Where(Function(x) x.Name.Equals(puppetName)).FirstOrDefault().Forms.Add(CreatePuppetForm(puppetForm, columns))
+            If listPuppet IsNot Nothing Then
+
+                Dim listPuppetForm = listPuppet.Forms.Where(Function(x) x.Name.Equals(puppetForm)).FirstOrDefault()
+
+                If listPuppetForm IsNot Nothing Then
+                    If listPuppetForm.SubForms Is Nothing Then listPuppetForm.SubForms = New List(Of PuppetForm)
+                    listPuppetForm.SubForms.Add(CreatePuppetForm(puppetForm, columns))
+                Else
+                    listPuppet.Forms.Add(CreatePuppetForm(puppetForm, columns))
+                End If
 
             Else
 
@@ -89,7 +98,7 @@ Public Class MainWindow
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
 
         If rows Is Nothing Then
-            MessageBox.Show("An error occured while loading the rows from the extended puppet table. Please contact Kawaii Shadowii#4571 on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("An error occured while loading the rows from the extended puppet table. Please contact @kawaii_shadowii on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Environment.Exit(0)
         End If
 
@@ -145,7 +154,7 @@ Public Class MainWindow
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
 
         If rows Is Nothing Then
-            MessageBox.Show("An error occured while loading the rows from the type chart. Please contact Kawaii Shadowii#4571 on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("An error occured while loading the rows from the type chart. Please contact @kawaii_shadowii on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Environment.Exit(0)
         End If
 
@@ -219,8 +228,8 @@ Public Class MainWindow
         Dim puppetsSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Puppetdex")
         LoadPuppets(puppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='SoD 1.103']/table/tbody/tr")
 
-        '_extendedPuppetsSourceCode = DownloadSource("http://en.tpdpwiki.net/wiki/Mod:Mod_Puppetdex")
-        'LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='Shard of Dreams - Extended -']/table/tbody/tr", False)
+        _extendedPuppetsSourceCode = DownloadSource("https://tpdp.miraheze.org/wiki/Mod:Mod_Puppetdex")
+        LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='Shard of Dreams - Extended -']/table/tbody/tr", False)
 
         SetMaxValue()
 
@@ -557,7 +566,7 @@ Public Class MainWindow
             Dim addToList As Boolean = False
             If _fanCharaPuppetList.Count = 0 Then addToList = True
 
-            LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/div[@title='Shard of Dreams - Extended - FanChara -']/table/tbody/tr", addToList)
+            LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='Shard of Dreams - Extended - FanChara -']/table/tbody/tr", addToList)
             btn_FanCharacters.Text = "No FanChara"
 
         Else
