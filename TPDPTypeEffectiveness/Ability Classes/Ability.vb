@@ -2,6 +2,7 @@
 
     Public Name As String
     Public Effectivenesses As List(Of AbilityEffectiveness)
+    Public ShowSubForms As Boolean = False
 
     Public Shared Function LoadAbilities() As List(Of Ability)
 
@@ -46,6 +47,11 @@
         AddEffectiveness("Dark", 0.5, inverseReactionEffectivenesses)
         AddAbilityWithMultipleEffects("Inverse Reaction", inverseReactionEffectivenesses, abilityList)
 
+        AddAbilityWithSubForms("Mode Shift", abilityList)
+        AddAbilityWithSubForms("Were-Hakutaku", abilityList)
+        AddAbilityWithSubForms("Bibliophilia", abilityList)
+        AddAbilityWithSubForms("Three Bodies", abilityList)
+
         Return abilityList
 
     End Function
@@ -78,6 +84,15 @@
         list.Add(New AbilityEffectiveness With {
             .TypeName = typeName,
             .Effectiveness = effectiveness
+        })
+
+    End Sub
+
+    Private Shared Sub AddAbilityWithSubForms(abilityName As String, list As List(Of Ability))
+
+        list.Add(New Ability With {
+            .Name = abilityName,
+            .ShowSubForms = True
         })
 
     End Sub

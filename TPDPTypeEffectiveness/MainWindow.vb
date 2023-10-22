@@ -10,6 +10,7 @@ Public Class MainWindow
     Private _typeChartList As New List(Of TypeChart)
     Private _sorted As Boolean = False
     Private _currentPuppetForm As PuppetForm
+    Private _currentPuppetSubForm As PuppetForm
     Private _abilityList As List(Of Ability)
     Private _extendedPuppetsSourceCode As String = Nothing
     Private _fanCharaPuppetList As New List(Of String)
@@ -51,6 +52,8 @@ Public Class MainWindow
         rows.RemoveAt(0)
         rows.RemoveAt(UBound(rows.ToArray()))
 
+        Dim subFormCounter As Integer = 1
+
         For Each row In rows
 
             Dim columns = row.SelectNodes("td")
@@ -68,9 +71,11 @@ Public Class MainWindow
 
                 If listPuppetForm IsNot Nothing Then
                     If listPuppetForm.SubForms Is Nothing Then listPuppetForm.SubForms = New List(Of PuppetForm)
-                    listPuppetForm.SubForms.Add(CreatePuppetForm(puppetForm, columns))
+                    listPuppetForm.SubForms.Add(CreatePuppetForm(String.Concat("Sub Form ", subFormCounter), columns))
+                    subFormCounter += 1
                 Else
                     listPuppet.Forms.Add(CreatePuppetForm(puppetForm, columns))
+                    subFormCounter = 1
                 End If
 
             Else
@@ -292,12 +297,13 @@ Public Class MainWindow
         ChangeButtonEnabledState(sender, "btn_Form")
         ChangeButtonEnabledState(btn_StatsBase, "btn_Stats")
         UpdateStatsAndTypes(sender)
+        ChangeDynamicButtonEnabledState(sender, "dynAbilitySubFormBtn")
 
     End Sub
 
     Private Sub StatsButtonClickEvent(sender As Object, e As EventArgs) Handles btn_StatsBase.Click, btn_Stats50Min.Click, btn_Stats50Max.Click
         ChangeButtonEnabledState(sender, "btn_Stats")
-        UpdateStats(DirectCast(sender, Button).Text, _currentPuppetForm)
+        UpdateStats(DirectCast(sender, Button).Text, If(_currentPuppetSubForm, _currentPuppetForm))
     End Sub
 
     Private Sub ChangeButtonEnabledState(sender As Object, buttonPrefix As String)
@@ -314,34 +320,51 @@ Public Class MainWindow
 
     End Sub
 
+    Private Sub ChangeDynamicButtonEnabledState(sender As Object, buttonPrefix As String)
+        Dim button = Me.Controls.Find(DirectCast(sender, Button).Name, True).FirstOrDefault()
+        If button IsNot Nothing Then button.Enabled = False
+    End Sub
+
     Private Sub UpdateStatsAndTypes(sender As Object)
 
         Dim formName = DirectCast(sender, Button).Text
-        _currentPuppetForm = _puppetList.Where(Function(x) x.Name.ToLower().Equals(cmb_CharacterSelect.Text.ToLower())).FirstOrDefault().Forms.Where(Function(x) x.Name.Equals(formName)).FirstOrDefault()
 
-        Dim type1 = _typeList.Where(Function(x) x.Name.Equals(_currentPuppetForm.Type1)).FirstOrDefault()
-        lbl_Type1.Text = _currentPuppetForm.Type1
+        Dim selectedForm As PuppetForm = Nothing
+
+        If formName.StartsWith("Sub Form ") Then
+            _currentPuppetSubForm = _currentPuppetForm.SubForms.Where(Function(x) x.Name.Equals(formName)).FirstOrDefault()
+            If _currentPuppetSubForm.SubForms Is Nothing Then _currentPuppetSubForm.SubForms = _currentPuppetForm.SubForms
+            selectedForm = _currentPuppetSubForm
+        Else
+            _currentPuppetSubForm = Nothing
+            _currentPuppetForm = _puppetList.Where(Function(x) x.Name.ToLower().Equals(cmb_CharacterSelect.Text.ToLower())).FirstOrDefault().Forms.Where(Function(x) x.Name.Equals(formName)).FirstOrDefault()
+            selectedForm = _currentPuppetForm
+        End If
+
+        Dim type1 = _typeList.Where(Function(x) x.Name.Equals(selectedForm.Type1)).FirstOrDefault()
+        lbl_Type1.Text = selectedForm.Type1
         SetTypeLabelColor(type1, lbl_Type1)
 
-        Dim type2 = _typeList.Where(Function(x) x.Name.Equals(_currentPuppetForm.Type2)).FirstOrDefault()
-        lbl_Type2.Text = _currentPuppetForm.Type2
+        Dim type2 = _typeList.Where(Function(x) x.Name.Equals(selectedForm.Type2)).FirstOrDefault()
+        lbl_Type2.Text = selectedForm.Type2
         SetTypeLabelColor(type2, lbl_Type2)
 
-        UpdateStats(btn_StatsBase.Text, _currentPuppetForm)
-        lbl_CostValue.Text = _currentPuppetForm.Cost
+        UpdateStats(btn_StatsBase.Text, selectedForm)
+        lbl_CostValue.Text = selectedForm.Cost
 
-        lbl_Ability1.Text = String.Concat("Ability 1: ", _currentPuppetForm.Ability1)
-        lbl_Ability2.Text = String.Concat("Ability 2: ", _currentPuppetForm.Ability2)
+        lbl_Ability1.Text = String.Concat("Ability 1: ", selectedForm.Ability1)
+        lbl_Ability2.Text = String.Concat("Ability 2: ", selectedForm.Ability2)
 
-        RemoveTypeLabels("dynTypeLbl_")
-        RemoveTypeLabels("dynAbilityTypeLbl_")
+        RemoveControls("dynTypeLbl_")
+        RemoveControls("dynAbilityTypeLbl_")
+        RemoveControls("dynAbilitySubFormBtn_")
 
         UpdateTypeEffectiveness(type1, True)
         UpdateTypeEffectiveness(type2, False)
 
         AddTypeLabels()
-        AddAbilityTypeLabels(_currentPuppetForm.Ability1, 12, 343, type1, type2)
-        AddAbilityTypeLabels(_currentPuppetForm.Ability2, 238, 343, type1, type2)
+        AddAbilityTypeLabelsAndButtons(selectedForm.Ability1, 12, 343, type1, type2, selectedForm.SubForms)
+        AddAbilityTypeLabelsAndButtons(selectedForm.Ability2, 238, 343, type1, type2, selectedForm.SubForms)
 
     End Sub
 
@@ -376,12 +399,13 @@ Public Class MainWindow
 
     End Sub
 
-    Private Sub RemoveTypeLabels(prefix As String)
+    Private Sub RemoveControls(prefix As String)
 
         Dim controlList As New List(Of Object)
 
         For Each control In Me.Controls
             If TypeOf control Is Label AndAlso DirectCast(control, Label).Name.Contains(prefix) Then controlList.Add(control)
+            If TypeOf control Is Button AndAlso DirectCast(control, Button).Name.Contains(prefix) Then controlList.Add(control)
         Next
 
         For Each control In controlList
@@ -412,7 +436,7 @@ Public Class MainWindow
 
     End Sub
 
-    Private Sub AddAbilityTypeLabels(abilityName As String, xPos As Integer, yPos As Integer, type1 As Type, type2 As Type)
+    Private Sub AddAbilityTypeLabelsAndButtons(abilityName As String, xPos As Integer, yPos As Integer, type1 As Type, type2 As Type, subForms As List(Of PuppetForm))
 
         If abilityName.Equals("Affinity Twist") Then
 
@@ -465,29 +489,55 @@ Public Class MainWindow
 
             If ability Is Nothing Then Exit Sub
 
-            For Each effectiveness In ability.Effectivenesses
-                Dim typeEffectiveness = _typeList.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault().Effectiveness
-                effectiveness.CalculatedEffectiveness = typeEffectiveness * effectiveness.Effectiveness
-            Next
+            If ability.Effectivenesses IsNot Nothing Then
 
-            Dim column As Integer = 0
-            Dim rowSpace As Integer = 0
+                For Each effectiveness In ability.Effectivenesses
+                    Dim typeEffectiveness = _typeList.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault().Effectiveness
+                    effectiveness.CalculatedEffectiveness = typeEffectiveness * effectiveness.Effectiveness
+                Next
 
-            For Each effectiveness In ability.Effectivenesses.OrderByDescending(Function(x) x.CalculatedEffectiveness)
+                Dim column As Integer = 0
+                Dim rowSpace As Integer = 0
 
-                Dim type = _typeList.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault()
-                AddLabelToForm(effectiveness.TypeName, effectiveness.CalculatedEffectiveness, "dynAbilityTypeLbl_", xPos + (113 * column), yPos + rowSpace, type)
+                For Each effectiveness In ability.Effectivenesses.OrderByDescending(Function(x) x.CalculatedEffectiveness)
 
-                column += 1
+                    Dim type = _typeList.Where(Function(x) x.Name.Equals(effectiveness.TypeName)).FirstOrDefault()
+                    AddLabelToForm(effectiveness.TypeName, effectiveness.CalculatedEffectiveness, "dynAbilityTypeLbl_", xPos + (113 * column), yPos + rowSpace, type)
 
-                If column Mod 2 = 0 Then
+                    column += 1
 
-                    column = 0
-                    rowSpace += 28
+                    If column Mod 2 = 0 Then
 
-                End If
+                        column = 0
+                        rowSpace += 28
 
-            Next
+                    End If
+
+                Next
+
+            End If
+
+            If ability.ShowSubForms Then
+
+                Dim column As Integer = 0
+                Dim rowSpace As Integer = 0
+
+                For Each subForm In subForms
+
+                    AddButtonToForm(subForm.Name, "dynAbilitySubFormBtn_", xPos + (113 * column), yPos + rowSpace)
+
+                    column += 1
+
+                    If column Mod 2 = 0 Then
+
+                        column = 0
+                        rowSpace += 28
+
+                    End If
+
+                Next
+
+            End If
 
         End If
 
@@ -668,6 +718,24 @@ Public Class MainWindow
             label.BackColor = ColorTranslator.FromHtml(type.BackColor)
             label.ForeColor = ColorTranslator.FromHtml(type.Color)
         End If
+
+    End Sub
+
+    Private Sub AddButtonToForm(text As String, labelPrefix As String, xPos As Integer, yPos As Integer)
+
+        Dim button As New Button
+        button.Text = text
+        button.Font = btn_Form1.Font
+        button.FlatStyle = btn_Form1.FlatStyle
+        button.Name = String.Concat(labelPrefix, text)
+        button.AutoSize = False
+        button.Size = New Size(100, 23)
+        button.Location = New Point(xPos, yPos)
+        button.TextAlign = ContentAlignment.MiddleCenter
+
+        AddHandler button.Click, AddressOf FormButtonClickEvent
+
+        Me.Controls.Add(button)
 
     End Sub
 
