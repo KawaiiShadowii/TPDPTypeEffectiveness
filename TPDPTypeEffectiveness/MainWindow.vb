@@ -95,7 +95,7 @@ Public Class MainWindow
 
     End Sub
 
-    Private Sub LoadExtendedPuppets(sourceCode As String, rowsSelector As String, isFanChara As Boolean)
+    Private Sub LoadFanCharaPuppets(sourceCode As String, rowsSelector As String, addToList As Boolean)
 
         Dim doc As New HtmlAgilityPack.HtmlDocument
         doc.LoadHtml(sourceCode)
@@ -103,7 +103,7 @@ Public Class MainWindow
         Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
 
         If rows Is Nothing Then
-            MessageBox.Show("An error occured while loading the rows from the extended puppet table. Please contact @kawaii_shadowii on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("An error occured while loading the rows from the FanChara puppet table. Please contact @kawaii_shadowii on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Environment.Exit(0)
         End If
 
@@ -123,7 +123,7 @@ Public Class MainWindow
                     .Forms = New List(Of PuppetForm)
                 })
 
-                If isFanChara Then _fanCharaPuppetList.Add(puppetName)
+                If addToList Then _fanCharaPuppetList.Add(puppetName)
 
             End If
 
@@ -234,7 +234,7 @@ Public Class MainWindow
         LoadPuppets(puppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='SoD 1.103']/table/tbody/tr")
 
         _extendedPuppetsSourceCode = DownloadSource("https://tpdp.miraheze.org/wiki/Mod:Mod_Puppetdex")
-        LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='Shard of Dreams - Extended -']/table/tbody/tr", False)
+        LoadPuppets(_extendedPuppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='Shard of Dreams - Extended -']/table/tbody/tr")
 
         SetMaxValue()
 
@@ -616,7 +616,7 @@ Public Class MainWindow
             Dim addToList As Boolean = False
             If _fanCharaPuppetList.Count = 0 Then addToList = True
 
-            LoadExtendedPuppets(_extendedPuppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='Shard of Dreams - Extended - FanChara -']/table/tbody/tr", addToList)
+            LoadFanCharaPuppets(_extendedPuppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='Shard of Dreams - Extended - FanChara -']/table/tbody/tr", addToList)
             btn_FanCharacters.Text = "No FanChara"
 
         Else
