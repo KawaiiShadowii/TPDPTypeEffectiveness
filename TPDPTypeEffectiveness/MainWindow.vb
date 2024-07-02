@@ -22,6 +22,8 @@ Public Class MainWindow
         Try
 
             Using client As New WebClient()
+                client.Headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0")
+                client.Encoding = System.Text.Encoding.UTF8
                 Return client.DownloadString(url)
             End Using
 
