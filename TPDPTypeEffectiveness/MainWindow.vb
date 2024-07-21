@@ -241,7 +241,7 @@ Public Class MainWindow
         SetMaxValue()
 
         Dim typesSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Type_Chart")
-        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='SoD 1.103']/table[@class='wikitable'][1]/tbody/tr")
+        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-mw-tabber-title='SoD 1.103']/table[@class='wikitable'][1]/tbody/tr")
 
         _abilityList = Ability.LoadAbilities()
 
