@@ -233,10 +233,10 @@ Public Class MainWindow
     Private Sub MainWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         Dim puppetsSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Puppetdex")
-        LoadPuppets(puppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='SoD 1.103']/table/tbody/tr")
+        LoadPuppets(puppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-mw-tabber-title='SoD 1.103']/table/tbody/tr")
 
         _extendedPuppetsSourceCode = DownloadSource("https://tpdp.miraheze.org/wiki/Mod:Mod_Puppetdex")
-        LoadPuppets(_extendedPuppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='Shard of Dreams - Extended -']/table/tbody/tr")
+        LoadPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-mw-tabber-title='Shard of Dreams - Extended -']/table/tbody/tr")
 
         SetMaxValue()
 
@@ -618,7 +618,7 @@ Public Class MainWindow
             Dim addToList As Boolean = False
             If _fanCharaPuppetList.Count = 0 Then addToList = True
 
-            LoadFanCharaPuppets(_extendedPuppetsSourceCode, "//html/body/div/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-title='Shard of Dreams - Extended - FanChara -']/table/tbody/tr", addToList)
+            LoadFanCharaPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-mw-tabber-title='Shard of Dreams - Extended - FanChara -']/table/tbody/tr", addToList)
             btn_FanCharacters.Text = "No FanChara"
 
         Else
