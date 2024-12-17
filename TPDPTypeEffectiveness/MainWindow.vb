@@ -233,15 +233,15 @@ Public Class MainWindow
     Private Sub MainWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         Dim puppetsSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Puppetdex")
-        LoadPuppets(puppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-mw-tabber-title='SoD 1.103']/table/tbody/tr")
+        LoadPuppets(puppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-tabpanel-SoD_1.103-0']/table/tbody/tr")
 
         _extendedPuppetsSourceCode = DownloadSource("https://tpdp.miraheze.org/wiki/Mod:Mod_Puppetdex")
-        LoadPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-mw-tabber-title='Shard of Dreams - Extended -']/table/tbody/tr")
+        LoadPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-tabpanel-Shard_of_Dreams_-_Extended_--0']/table/tbody/tr")
 
         SetMaxValue()
 
         Dim typesSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Type_Chart")
-        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-mw-tabber-title='SoD 1.103']/table[@class='wikitable'][1]/tbody/tr")
+        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-tabpanel-SoD_1.103-0']/table[@class='wikitable'][1]/tbody/tr")
 
         _abilityList = Ability.LoadAbilities()
 
@@ -618,7 +618,7 @@ Public Class MainWindow
             Dim addToList As Boolean = False
             If _fanCharaPuppetList.Count = 0 Then addToList = True
 
-            LoadFanCharaPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@data-mw-tabber-title='Shard of Dreams - Extended - FanChara -']/table/tbody/tr", addToList)
+            LoadFanCharaPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-tabpanel-Shard_of_Dreams_-_Extended_-_FanChara_--0']/table/tbody/tr", addToList)
             btn_FanCharacters.Text = "No FanChara"
 
         Else
