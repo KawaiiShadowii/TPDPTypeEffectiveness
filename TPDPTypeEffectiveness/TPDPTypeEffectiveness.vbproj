@@ -135,6 +135,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Offline Backup\ModPuppetdex.html" />
+    <EmbeddedResource Include="Offline Backup\Puppetdex.html" />
+    <EmbeddedResource Include="Offline Backup\TypeChart.html" />
     <Content Include="TPDPTypeEffectivenessIcon.ico" />
   </ItemGroup>
   <ItemGroup />

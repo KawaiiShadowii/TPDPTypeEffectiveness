@@ -1,5 +1,6 @@
 ﻿Imports System.IO
 Imports System.Net
+Imports System.Reflection
 Imports System.Text.RegularExpressions
 
 Public Class MainWindow
@@ -17,7 +18,7 @@ Public Class MainWindow
 
 #Region "Functions for initial load"
 
-    Private Function DownloadSource(url As String) As String
+    Private Function DownloadSource(url As String, offlineBackup As String) As String
 
         Try
 
@@ -29,26 +30,28 @@ Public Class MainWindow
 
         Catch
 
-            MessageBox.Show(String.Concat($"An error occured while requesting {url}. It is possible that the wiki is offline. If the error still occurs after some time, please contact @kawaii_shadowii on Discord."),
-                            "Error",
+            MessageBox.Show(String.Concat($"An error occured while requesting {url}. It is possible that the wiki is offline. Using offline backup file ""{offlineBackup}""."),
+                            "Warning",
                             MessageBoxButtons.OK,
-                            MessageBoxIcon.Error)
-            Environment.Exit(0)
+                            MessageBoxIcon.Warning)
+
+            Return GetSourceCodeFromResource(offlineBackup)
 
         End Try
 
     End Function
 
-    Private Sub LoadPuppets(sourceCode As String, rowsSelector As String)
+    Private Sub LoadPuppets(sourceCode As String, rowsSelector As String, offlineBackup As String)
 
-        Dim doc As New HtmlAgilityPack.HtmlDocument
-        doc.LoadHtml(sourceCode)
-
-        Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
+        Dim rows = LoadRows(sourceCode, rowsSelector)
 
         If rows Is Nothing Then
-            MessageBox.Show("An error occured while loading the rows from the puppet table. Please contact @kawaii_shadowii on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            Environment.Exit(0)
+
+            MessageBox.Show($"An error occured while loading the rows from the wiki puppet table. Using offline backup file ""{offlineBackup}"". Please contact @kawaii_shadowii on Discord in case of outdated information.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+
+            sourceCode = GetSourceCodeFromResource(offlineBackup)
+            rows = LoadRows(sourceCode, rowsSelector)
+
         End If
 
         rows.RemoveAt(0)
@@ -60,7 +63,7 @@ Public Class MainWindow
 
             Dim columns = row.SelectNodes("td")
 
-            Dim formName = RemoveHTMLTagsAndNewlines(columns(1).InnerText)
+            Dim formName = CleanText(columns(1).InnerText)
             Dim puppetFormName = formName.Split(" "c)
             Dim puppetForm = puppetFormName.FirstOrDefault()
             Dim puppetName = puppetFormName.LastOrDefault().TrimEnd("*"c)
@@ -99,10 +102,7 @@ Public Class MainWindow
 
     Private Sub LoadFanCharaPuppets(sourceCode As String, rowsSelector As String, addToList As Boolean)
 
-        Dim doc As New HtmlAgilityPack.HtmlDocument
-        doc.LoadHtml(sourceCode)
-
-        Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
+        Dim rows = LoadRows(sourceCode, rowsSelector)
 
         If rows Is Nothing Then
             MessageBox.Show("An error occured while loading the rows from the FanChara puppet table. Please contact @kawaii_shadowii on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -118,7 +118,7 @@ Public Class MainWindow
 
             If tableHeader IsNot Nothing Then
 
-                Dim puppetName As String = RemoveHTMLTagsAndNewlines(tableHeader.InnerText)
+                Dim puppetName As String = CleanText(tableHeader.InnerText)
 
                 _puppetList.Add(New Puppet With {
                     .Name = puppetName,
@@ -153,16 +153,16 @@ Public Class MainWindow
 
     End Sub
 
-    Private Sub LoadTypesAndTypeChart(sourceCode As String, rowsSelector As String)
+    Private Sub LoadTypesAndTypeChart(sourceCode As String, rowsSelector As String, offlineBackup As String)
 
-        Dim doc As New HtmlAgilityPack.HtmlDocument
-        doc.LoadHtml(sourceCode)
-
-        Dim rows = doc.DocumentNode.SelectNodes(rowsSelector)
+        Dim rows = LoadRows(sourceCode, rowsSelector)
 
         If rows Is Nothing Then
-            MessageBox.Show("An error occured while loading the rows from the type chart. Please contact @kawaii_shadowii on Discord.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            Environment.Exit(0)
+            MessageBox.Show($"An error occured while loading the rows from the wiki type chart. Using offline backup file ""{offlineBackup}"". Please contact @kawaii_shadowii on Discord in case of outdated information.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+
+            sourceCode = GetSourceCodeFromResource(offlineBackup)
+            rows = LoadRows(sourceCode, rowsSelector)
+
         End If
 
         rows.RemoveAt(0)
@@ -177,7 +177,7 @@ Public Class MainWindow
             Dim typeColor = typeStyles(2).Substring(typeStyles(2).LastIndexOf("#"c), 7)
 
             _typeList.Add(New Type With {
-                .Name = RemoveHTMLTagsAndNewlines(type.InnerText),
+                .Name = CleanText(type.InnerText),
                 .Pos = rowPos,
                 .BackColor = typeBackColor,
                 .Color = typeColor
@@ -189,7 +189,7 @@ Public Class MainWindow
 
                 Dim value As Double = 1
 
-                Select Case RemoveHTMLTagsAndNewlines(column.InnerText)
+                Select Case CleanText(column.InnerText)
                     Case "O"
                         value = 2
                     Case String.Empty
@@ -232,16 +232,16 @@ Public Class MainWindow
 
     Private Sub MainWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
-        Dim puppetsSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Puppetdex")
-        LoadPuppets(puppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-tabpanel-SoD_1.103-0']/table/tbody/tr")
+        Dim puppetsSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Puppetdex", "Puppetdex.html")
+        LoadPuppets(puppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-SoD_1.103']/table/tbody/tr", "Puppetdex.html")
 
-        _extendedPuppetsSourceCode = DownloadSource("https://tpdp.miraheze.org/wiki/Mod:Mod_Puppetdex")
-        LoadPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-tabpanel-Shard_of_Dreams_-_Extended_--0']/table/tbody/tr")
+        _extendedPuppetsSourceCode = DownloadSource("https://tpdp.miraheze.org/wiki/Mod:Mod_Puppetdex", "ModPuppetdex.html")
+        LoadPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-Shard_of_Dreams_-_Extended_-']/table/tbody/tr", "ModPuppetdex.html")
 
         SetMaxValue()
 
-        Dim typesSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Type_Chart")
-        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-tabpanel-SoD_1.103-0']/table[@class='wikitable'][1]/tbody/tr")
+        Dim typesSourceCode As String = DownloadSource("https://tpdp.miraheze.org/wiki/Type_Chart", "TypeChart.html")
+        LoadTypesAndTypeChart(typesSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-SoD_1.103']/table[@class='wikitable'][1]/tbody/tr", "TypeChart.html")
 
         _abilityList = Ability.LoadAbilities()
 
@@ -618,7 +618,7 @@ Public Class MainWindow
             Dim addToList As Boolean = False
             If _fanCharaPuppetList.Count = 0 Then addToList = True
 
-            LoadFanCharaPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-tabpanel-Shard_of_Dreams_-_Extended_-_FanChara_--0']/table/tbody/tr", addToList)
+            LoadFanCharaPuppets(_extendedPuppetsSourceCode, "//html/body/div[@class='mw-page-container']/div/div[@class='mw-content-container']/main[@id='content']/div[@id='bodyContent']/div[@id='mw-content-text']/div/div/section/article[@id='tabber-Shard_of_Dreams_-_Extended_-_FanChara_-']/table/tbody/tr", addToList)
             btn_FanCharacters.Text = "No FanChara"
 
         Else
@@ -654,12 +654,35 @@ Public Class MainWindow
 
 #Region "Support Functions"
 
+    Private Function GetSourceCodeFromResource(resourceName As String) As String
+
+        Dim ass = [Assembly].GetExecutingAssembly()
+
+        Using fs = ass.GetManifestResourceStream($"TPDPTypeEffectiveness.{resourceName}")
+
+            Using sr As New StreamReader(fs)
+                Return sr.ReadToEnd()
+            End Using
+
+        End Using
+
+    End Function
+
+    Private Function LoadRows(sourceCode As String, rowsSelector As String) As HtmlAgilityPack.HtmlNodeCollection
+
+        Dim doc As New HtmlAgilityPack.HtmlDocument
+        doc.LoadHtml(sourceCode)
+
+        Return doc.DocumentNode.SelectNodes(rowsSelector)
+
+    End Function
+
     Private Function CreatePuppetForm(name As String, columns As HtmlAgilityPack.HtmlNodeCollection) As PuppetForm
 
         Return New PuppetForm With {
-            .Name = RemoveHTMLTagsAndNewlines(name),
-            .Type1 = RemoveHTMLTagsAndNewlines(columns(2).InnerText),
-            .Type2 = RemoveHTMLTagsAndNewlines(columns(3).InnerText),
+            .Name = CleanText(name),
+            .Type1 = CleanText(columns(2).InnerText),
+            .Type2 = CleanText(columns(3).InnerText),
             .BaseHP = columns(4).InnerText,
             .BaseFoAtk = columns(5).InnerText,
             .BaseFoDef = columns(6).InnerText,
@@ -679,8 +702,8 @@ Public Class MainWindow
             .MaxSpAtk = CalculateStat(False, columns(7).InnerText, 15D, 64D, 50D, 1.1D),
             .MaxSpDef = CalculateStat(False, columns(8).InnerText, 15D, 64D, 50D, 1.1D),
             .MaxSpd = CalculateStat(False, columns(9).InnerText, 15D, 64D, 50D, 1.1D),
-            .Ability1 = RemoveHTMLTagsAndNewlines(columns(12).InnerText),
-            .Ability2 = RemoveHTMLTagsAndNewlines(columns(13).InnerText)
+            .Ability1 = CleanText(columns(12).InnerText),
+            .Ability2 = CleanText(columns(13).InnerText)
         }
 
     End Function
@@ -741,8 +764,8 @@ Public Class MainWindow
 
     End Sub
 
-    Private Function RemoveHTMLTagsAndNewlines(str As String) As String
-        Return Regex.Replace(str, "<.*?>", String.Empty).Replace(vbCrLf, Nothing).Replace(vbCr, Nothing).Replace(vbLf, Nothing)
+    Private Function CleanText(str As String) As String
+        Return Regex.Replace(str, "<.*?>", String.Empty).Replace(vbCrLf, Nothing).Replace(vbCr, Nothing).Replace(vbLf, Nothing).Replace(vbTab, Nothing)
     End Function
 
 #End Region
